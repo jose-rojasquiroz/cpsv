@@ -722,13 +722,13 @@ def detect_occupancy_status(text):
     # Keywords para okupación
     okupa_keywords = [
         'okupa', 'okupado', 'ocupado ilegalmente', 'ocupación ilegal',
-        'desalojo', 'squatter', 'ocupas', 'okupas'
+        'desalojo', 'squatter', 'ocupas', 'okupas', 'ilegal'
     ]
     
     # Keywords para alquiler
     alquiler_keywords = [
         'alquilado', 'arrendado', 'en alquiler', 'inquilino actual',
-        'rentado', 'con inquilinos', 'renta actual'
+        'rentado', 'con inquilinos', 'renta actual', 'alquilada', 'arrendada', 'alquiler'
     ]
     
     return {
