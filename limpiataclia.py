@@ -51,7 +51,7 @@ asegurar_datos()
 ###FIN DEL BLOQUE NUEVO 
 
 # Directorio de datos
-DATA_DIR = Path(__file__).resolve().parent / 'data'
+# DATA_DIR = Path(__file__).resolve().parent / 'data'
 
 def extract_coordinates(df): 
     """
