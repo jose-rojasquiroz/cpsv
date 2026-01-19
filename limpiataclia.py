@@ -1252,11 +1252,11 @@ def process_habitaclia_data(df, año_dataset, tipo_datos='venta', tipo_oferta='v
         # 5. Actualizar información de plantas con catastro
         print("Actualizando información de plantas con catastro...")
         if tipo_oferta == 'vivienda':
-            catastro_alturas = gpd.read_file(str(DATA_DIR / 'catastro_alturas.gpkg'))
+            catastro_alturas = gpd.read_file(str(DATA_DIR / 'data' /'catastro_alturas.gpkg'))
         elif tipo_oferta == 'local_comercial':
-            catastro_alturas = gpd.read_file(str(DATA_DIR / '04-parcelas_catastrales-locales_comerciales_con_alturas.gpkg'))
+            catastro_alturas = gpd.read_file(str(DATA_DIR / 'data' /'04-parcelas_catastrales-locales_comerciales_con_alturas.gpkg'))
         else:  # oficina
-            catastro_alturas = gpd.read_file(str(DATA_DIR / '04-parcelas_catastrales-oficinas_con_alturas.gpkg'))
+            catastro_alturas = gpd.read_file(str(DATA_DIR / 'data' /'04-parcelas_catastrales-oficinas_con_alturas.gpkg'))
         processed = update_floor_info(processed, catastro_alturas)
         
         # 6. Detectar estado de ocupación (solo para viviendas)
@@ -1308,17 +1308,17 @@ def process_habitaclia_data(df, año_dataset, tipo_datos='venta', tipo_oferta='v
         try:
             # Seleccionar fuentes según tipo de oferta
             if tipo_oferta == 'vivienda':
-                catastro_edificios = gpd.read_file(str(DATA_DIR / 'buildings_catastro.gpkg'))
+                catastro_edificios = gpd.read_file(str(DATA_DIR / 'data' / 'buildings_catastro.gpkg'))
                 catastro_edificios = catastro_edificios[
                     catastro_edificios['currentUse'].str.contains('residential', case=False, na=False)
                 ].copy()
-                catastro_calidad = gpd.read_file(str(DATA_DIR / 'catastro_calidad_cons.gpkg'))
+                catastro_calidad = gpd.read_file(str(DATA_DIR / 'data' / 'catastro_calidad_cons.gpkg'))
             elif tipo_oferta == 'local_comercial':
-                catastro_edificios = gpd.read_file(str(DATA_DIR / '04-parcelas_catastrales-locales_comerciales_con_año_construccion.gpkg'))
-                catastro_calidad = gpd.read_file(str(DATA_DIR / '04-parcelas_catastrales-locales_comerciales_con_calidad.gpkg'))
+                catastro_edificios = gpd.read_file(str(DATA_DIR / 'data' / '04-parcelas_catastrales-locales_comerciales_con_año_construccion.gpkg'))
+                catastro_calidad = gpd.read_file(str(DATA_DIR / 'data' / '04-parcelas_catastrales-locales_comerciales_con_calidad.gpkg'))
             else:  # oficina
-                catastro_edificios = gpd.read_file(str(DATA_DIR / '04-parcelas_catastrales-oficinas_con_año_construccion.gpkg'))
-                catastro_calidad = gpd.read_file(str(DATA_DIR / '04-parcelas_catastrales-oficinas_con_calidad.gpkg'))
+                catastro_edificios = gpd.read_file(str(DATA_DIR / 'data' / '04-parcelas_catastrales-oficinas_con_año_construccion.gpkg'))
+                catastro_calidad = gpd.read_file(str(DATA_DIR / 'data' / '04-parcelas_catastrales-oficinas_con_calidad.gpkg'))
             
             print(f"Registros encontrados en catastro: {len(catastro_edificios)}")
             processed = update_catastral_info(processed, catastro_edificios, catastro_calidad, año_dataset)
@@ -1446,7 +1446,7 @@ def process_habitaclia_data(df, año_dataset, tipo_datos='venta', tipo_oferta='v
             print(f"Tras eliminar duplicados por código de anuncio, tenemos {len(processed)} casos")
             processed = remove_duplicates_by_descrip(processed)
             print(f"Tras eliminar duplicados por descripción, tenemos {len(processed)} casos")
-            processed = remove_spatial_duplicates(processed,grid_path=str(DATA_DIR / "cuadricula_bcn-31N.gpkg"),
+            processed = remove_spatial_duplicates(processed,grid_path=str(DATA_DIR / "data" / "cuadricula_bcn-31N.gpkg"),
                                                   tipo_oferta=tipo_oferta)
             print(f"Tras eliminar duplicados espaciales, tenemos {len(processed)} casos")
 
@@ -1465,8 +1465,8 @@ def process_habitaclia_data(df, año_dataset, tipo_datos='venta', tipo_oferta='v
         # 16. Calcular distancias a puntos de referencia
         print("\nCalculando distancias a puntos de referencia...")
         try:
-            placa_cat = gpd.read_file(str(DATA_DIR / 'placa_catalunya_BCN_31N.gpkg'))
-            fr_macia = gpd.read_file(str(DATA_DIR / 'placa_francesc_macia_BCN_31N.gpkg'))
+            placa_cat = gpd.read_file(str(DATA_DIR / 'data' / 'placa_catalunya_BCN_31N.gpkg'))
+            fr_macia = gpd.read_file(str(DATA_DIR / 'data' / 'placa_francesc_macia_BCN_31N.gpkg'))
             
             # Calcular distancias euclidianas en metros
             processed['distancia_plaza_cat'] = processed.geometry.apply(lambda x: x.distance(placa_cat.geometry.iloc[0]))
@@ -1480,7 +1480,7 @@ def process_habitaclia_data(df, año_dataset, tipo_datos='venta', tipo_oferta='v
         # 17. Calcular primera línea de mar
         print("\nCalculando primera línea de mar...")
         try:
-            linea_mar = gpd.read_file(str(DATA_DIR / 'primera_linea_de_mar_BCN_31N.gpkg'))
+            linea_mar = gpd.read_file(str(DATA_DIR / 'data' / 'primera_linea_de_mar_BCN_31N.gpkg'))
             buffer_mar = linea_mar.geometry.buffer(300)
             processed['primera_linea_mar'] = processed.geometry.apply(
                 lambda x: 1 if any(x.within(buf) for buf in buffer_mar) else 0
@@ -1540,8 +1540,8 @@ def process_habitaclia_parking(df, año_dataset, filtro=True, tipo_datos='venta'
     # 5. Calcular distancias a puntos de referencia
     print("Calculando distancias a Plaza Catalunya y Francesc Macià...")
     try:
-        placa_cat = gpd.read_file(str(DATA_DIR / 'placa_catalunya_BCN_31N.gpkg'))
-        fr_macia  = gpd.read_file(str(DATA_DIR / 'placa_francesc_macia_BCN_31N.gpkg'))
+        placa_cat = gpd.read_file(str(DATA_DIR / 'data' / 'placa_catalunya_BCN_31N.gpkg'))
+        fr_macia  = gpd.read_file(str(DATA_DIR / 'data' / 'placa_francesc_macia_BCN_31N.gpkg'))
 
         processed['distancia_plaza_cat'] = processed.geometry.apply(
             lambda x: x.distance(placa_cat.geometry.iloc[0]) if x and not x.is_empty else None
@@ -1557,7 +1557,7 @@ def process_habitaclia_parking(df, año_dataset, filtro=True, tipo_datos='venta'
     # 6. Calcular si está en primera línea de mar
     print("Determinando proximidad al mar...")
     try:
-        linea_mar = gpd.read_file(str(DATA_DIR / 'primera_linea_de_mar_BCN_31N.gpkg'))
+        linea_mar = gpd.read_file(str(DATA_DIR / 'data' / 'primera_linea_de_mar_BCN_31N.gpkg'))
         buffer_mar = linea_mar.geometry.buffer(300)
         processed['primera_linea_mar'] = processed.geometry.apply(
             lambda x: 1 if x and any(x.within(buf) for buf in buffer_mar) else 0
@@ -1571,8 +1571,8 @@ def process_habitaclia_parking(df, año_dataset, filtro=True, tipo_datos='venta'
 
     try:
         # Parkings en viviendas plurifamiliares (`tip` inicia con 113 según catastro)
-        catastro_año_viv = gpd.read_file(str(DATA_DIR / '04-parcelas_catastrales-parkings_con_año_construccion-viv_pluri.gpkg'))
-        catastro_calidad_viv = gpd.read_file(str(DATA_DIR / '04-parcelas_catastrales-parkings_con_calidad-viv_pluri.gpkg'))
+        catastro_año_viv = gpd.read_file(str(DATA_DIR / 'data' / '04-parcelas_catastrales-parkings_con_año_construccion-viv_pluri.gpkg'))
+        catastro_calidad_viv = gpd.read_file(str(DATA_DIR / 'data' / '04-parcelas_catastrales-parkings_con_calidad-viv_pluri.gpkg'))
 
         gdf_viv = update_catastral_info(processed, catastro_año_viv, catastro_calidad_viv, año_dataset)
 
@@ -1580,8 +1580,8 @@ def process_habitaclia_parking(df, año_dataset, filtro=True, tipo_datos='venta'
         processed['calidad-viv_pluri'] = gdf_viv.reindex(processed.index)['calidad_construccion']
 
         # Parkings en naves (`tip` inicia con 22 según catastro)
-        catastro_año_nav = gpd.read_file(str(DATA_DIR / '04-parcelas_catastrales-parkings_con_año_construccion-naves.gpkg'))
-        catastro_calidad_nav = gpd.read_file(str(DATA_DIR / '04-parcelas_catastrales-parkings_con_calidad-naves.gpkg'))
+        catastro_año_nav = gpd.read_file(str(DATA_DIR / 'data' / '04-parcelas_catastrales-parkings_con_año_construccion-naves.gpkg'))
+        catastro_calidad_nav = gpd.read_file(str(DATA_DIR / 'data' / '04-parcelas_catastrales-parkings_con_calidad-naves.gpkg'))
         gdf_nav = update_catastral_info(processed, catastro_año_nav, catastro_calidad_nav, año_dataset)
 
         processed['año_construccion-naves'] = gdf_nav.reindex(processed.index)['año_construccion']
@@ -1623,7 +1623,7 @@ def process_habitaclia_parking(df, año_dataset, filtro=True, tipo_datos='venta'
     print(f"Tras eliminar duplicados por código de anuncio: {len(processed)} registros.")
     processed = processed.drop_duplicates(subset=['Description'], keep='first')
     print(f"Tras eliminar duplicados por descripción: {len(processed)} registros.")
-    processed = remove_spatial_duplicates(processed,grid_path=str(DATA_DIR / "cuadricula_bcn-31N.gpkg"), tipo_oferta="parking")
+    processed = remove_spatial_duplicates(processed,grid_path=str(DATA_DIR / "data" / "cuadricula_bcn-31N.gpkg"), tipo_oferta="parking")
     print(f"Tras eliminar duplicados espaciales, tenemos {len(processed)} casos")
 
     print(f"Procesamiento completado. Total de parkings: {len(processed)} registros.")
@@ -1672,8 +1672,8 @@ def process_habitaclia_industrial(df, año_dataset):
     # 7. Incorporar datos catastrales
     print("\nProcesando información catastral...")
 
-    catastro_año = gpd.read_file(str(DATA_DIR / '04-parcelas_catastrales-locales_industriales_con_año_construccion.gpkg'))
-    catastro_calidad = gpd.read_file(str(DATA_DIR / '04-parcelas_catastrales-locales_industriales_con_calidad.gpkg'))
+    catastro_año = gpd.read_file(str(DATA_DIR / 'data' / '04-parcelas_catastrales-locales_industriales_con_año_construccion.gpkg'))
+    catastro_calidad = gpd.read_file(str(DATA_DIR / 'data' / '04-parcelas_catastrales-locales_industriales_con_calidad.gpkg'))
 
     gdf = update_catastral_info(processed, catastro_año, catastro_calidad, año_dataset, buffer_distance=1200)
 
@@ -1694,7 +1694,7 @@ def process_habitaclia_industrial(df, año_dataset):
     print(f"Tras eliminar duplicados por código de anuncio: {len(processed)} registros.")
     processed = processed.drop_duplicates(subset=['Description'], keep='first')
     print(f"Tras eliminar duplicados por descripción: {len(processed)} registros.")
-    processed = remove_spatial_duplicates(processed,grid_path=str(DATA_DIR / "cuadricula_bcn-31N.gpkg"), tipo_oferta="industrial")
+    processed = remove_spatial_duplicates(processed,grid_path=str(DATA_DIR / "data" / "cuadricula_bcn-31N.gpkg"), tipo_oferta="industrial")
     print(f"Tras eliminar duplicados espaciales, tenemos {len(processed)} casos")
 
     print(f"Procesamiento completado. Total de industrials: {len(processed)} registros.")
