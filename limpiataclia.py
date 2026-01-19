@@ -722,7 +722,7 @@ def detect_occupancy_status(text):
     # Keywords para okupación
     okupa_keywords = [
         'okupa', 'okupado', 'ocupado ilegalmente', 'ocupación ilegal',
-        'desalojo', 'squatter', 'ocupas', 'okupas', 'ilegal'
+        'desalojo', 'squatter', 'ocupas', 'okupas', 'ilegal', 'ocupado'
     ]
     
     # Keywords para alquiler
@@ -731,9 +731,13 @@ def detect_occupancy_status(text):
         'rentado', 'con inquilinos', 'renta actual', 'alquilada', 'arrendada', 'alquiler'
     ]
     
+    nuda_propiedad = ['nuda propiedad', 'nuda-propiedad', 'nuda propiedad con usufructo',
+                      'NUA PROPIETAT', 'usufruto', 'usufructuario', 'vitalicia', 'vitalicio']
+
     return {
         'okupa': 1 if any(keyword in text for keyword in okupa_keywords) else 0,
-        'alquilado': 1 if any(keyword in text for keyword in alquiler_keywords) else 0
+        'alquilado': 1 if any(keyword in text for keyword in alquiler_keywords) else 0,
+        'nuda_propiedad': 1 if any(keyword in text for keyword in nuda_propiedad) else 0
     }
 
 def check_habitability_certificate(text):
@@ -1275,9 +1279,11 @@ def process_habitaclia_data(df, año_dataset, tipo_datos='venta', tipo_oferta='v
             occupancy_results = processed['Description'].apply(detect_occupancy_status)
             processed['okupa'] = occupancy_results.apply(lambda x: x['okupa'])
             processed['alquilado'] = occupancy_results.apply(lambda x: x['alquilado'])
+            processed['nuda_propiedad'] = occupancy_results.apply(lambda x: x['nuda_propiedad'])
         else:
             processed['okupa'] = 0
             processed['alquilado'] = 0
+            processed['nuda_propiedad'] = 0
         
         # 7. Verificar cédula de habitabilidad (solo para viviendas)
         if tipo_oferta == 'vivienda':
@@ -1405,6 +1411,7 @@ def process_habitaclia_data(df, año_dataset, tipo_datos='venta', tipo_oferta='v
                 processed = processed[processed['okupa'] == 0].copy()
                 if tipo_datos == 'venta':
                     processed = processed[processed['alquilado'] == 0].copy()
+                    processed = processed[processed['nuda_propiedad'] == 0].copy()
                 processed = processed[processed['cedula'] == 1].copy()
                 processed = processed[processed['parking'].isin([0, 1])].copy()
                 print(f"Tras eliminar casos con parking incluido, tenemos {len(processed)} casos")
