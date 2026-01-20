@@ -18,7 +18,7 @@ import zipfile
 import io
 import requests
 
-URL_DEL_ZIP = "https://github.com/jose-rojasquiroz/limpiataclia/releases/download/0.1.0/data.zip"
+URL_DEL_ZIP = "https://github.com/jose-rojasquiroz/cpsv/releases/download/0.1.0/data.zip"
 DATA_DIR = Path.home() / '.limpiataclia_data' # Crear un directorio oculto en el home del usuario
 
 def asegurar_datos():

@@ -1,7 +1,5 @@
 """
-CPSV - Catalan Property Statistics and Visualization
-
-Paquete para limpieza y análisis de datos inmobiliarios de Barcelona.
+Paquete para limpieza y análisis de datos.
 Incluye utilidades para trabajar con datos catastrales, geoespaciales y estadísticas.
 """
 
