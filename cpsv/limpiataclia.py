@@ -714,31 +714,39 @@ def detect_occupancy_status(text):
     """
     Detecta si la vivienda está ocupada o alquilada.
     """
+    # Inicializar con valores por defecto
+    result = {'okupa': 0, 'alquilado': 0, 'nuda_propiedad': 0}
+    
     if pd.isna(text):
-        return {'okupa': 0, 'alquilado': 0}
+        return result
+    
+    try:
+        text = str(text).lower()
         
-    text = text.lower()
-    
-    # Keywords para okupación
-    okupa_keywords = [
-        'okupa', 'okupado', 'ocupado ilegalmente', 'ocupación ilegal',
-        'desalojo', 'squatter', 'ocupas', 'okupas', 'ilegal', 'ocupado'
-    ]
-    
-    # Keywords para alquiler
-    alquiler_keywords = [
-        'alquilado', 'arrendado', 'en alquiler', 'inquilino actual',
-        'rentado', 'con inquilinos', 'renta actual', 'alquilada', 'arrendada', 'alquiler'
-    ]
-    
-    nuda_propiedad = ['nuda propiedad', 'nuda-propiedad', 'nuda propiedad con usufructo',
-                      'NUA PROPIETAT', 'usufruto', 'usufructuario', 'vitalicia', 'vitalicio']
+        # Keywords para okupación
+        okupa_keywords = [
+            'okupa', 'okupado', 'ocupado ilegalmente', 'ocupación ilegal',
+            'desalojo', 'squatter', 'ocupas', 'okupas', 'ilegal', 'ocupado'
+        ]
+        
+        # Keywords para alquiler
+        alquiler_keywords = [
+            'alquilado', 'arrendado', 'en alquiler', 'inquilino actual',
+            'rentado', 'con inquilinos', 'renta actual', 'alquilada', 'arrendada', 'alquiler'
+        ]
+        
+        nuda_propiedad = ['nuda propiedad', 'nuda-propiedad', 'nuda propiedad con usufructo',
+                          'NUA PROPIETAT', 'usufruto', 'usufructuario', 'vitalicia', 'vitalicio']
 
-    return {
-        'okupa': 1 if any(keyword in text for keyword in okupa_keywords) else 0,
-        'alquilado': 1 if any(keyword in text for keyword in alquiler_keywords) else 0,
-        'nuda_propiedad': 1 if any(keyword in text for keyword in nuda_propiedad) else 0
-    }
+        result['okupa'] = 1 if any(keyword in text for keyword in okupa_keywords) else 0
+        result['alquilado'] = 1 if any(keyword in text for keyword in alquiler_keywords) else 0
+        result['nuda_propiedad'] = 1 if any(keyword in text for keyword in nuda_propiedad) else 0
+        
+    except Exception as e:
+        print(f"Error en detect_occupancy_status: {str(e)}")
+        # Mantener valores por defecto en caso de error
+    
+    return result
 
 def check_habitability_certificate(text):
     """
@@ -1276,10 +1284,16 @@ def process_habitaclia_data(df, año_dataset, tipo_datos='venta', tipo_oferta='v
         # 6. Detectar estado de ocupación (solo para viviendas)
         if tipo_oferta == 'vivienda':
             print("Detectando estado de ocupación...")
-            occupancy_results = processed['Description'].apply(detect_occupancy_status)
-            processed['okupa'] = occupancy_results.apply(lambda x: x['okupa'])
-            processed['alquilado'] = occupancy_results.apply(lambda x: x['alquilado'])
-            processed['nuda_propiedad'] = occupancy_results.apply(lambda x: x['nuda_propiedad'])
+            try:
+                occupancy_results = processed['Description'].apply(detect_occupancy_status)
+                processed['okupa'] = occupancy_results.apply(lambda x: x.get('okupa', 0))
+                processed['alquilado'] = occupancy_results.apply(lambda x: x.get('alquilado', 0))
+                processed['nuda_propiedad'] = occupancy_results.apply(lambda x: x.get('nuda_propiedad', 0))
+            except Exception as e:
+                print(f"Error al detectar estado de ocupación: {str(e)}")
+                processed['okupa'] = 0
+                processed['alquilado'] = 0
+                processed['nuda_propiedad'] = 0
         else:
             processed['okupa'] = 0
             processed['alquilado'] = 0
